@@ -1,5 +1,3 @@
-[bordsplanering_1.html](https://github.com/user-attachments/files/29959878/bordsplanering_1.html)
-<!doctype html>
 <html lang="sv">
 <head>
 <meta charset="utf-8">

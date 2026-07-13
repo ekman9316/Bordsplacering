@@ -1,3 +1,5 @@
+[bordsplanering_2.html](https://github.com/user-attachments/files/29985121/bordsplanering_2.html)
+<!doctype html>
 <html lang="sv">
 <head>
 <meta charset="utf-8">
@@ -6,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
     --paper:#efe9dc;
@@ -150,10 +153,10 @@
     <div class="section">
       <h2>Rum</h2>
       <div class="field-row">
-        <div class="field"><label>Bredd (cm)</label><input type="number" id="roomWidth" min="200" max="5000" step="10"></div>
-        <div class="field"><label>Längd (cm)</label><input type="number" id="roomLength" min="200" max="5000" step="10"></div>
+        <div class="field"><label>Bredd (m)</label><input type="number" id="roomWidth" min="2" max="50" step="0.1"></div>
+        <div class="field"><label>Längd (m)</label><input type="number" id="roomLength" min="2" max="50" step="0.1"></div>
       </div>
-      <div class="hint">Ritytan skalas automatiskt efter rummets mått. ▭ ruta i bakgrunden = 50 cm.</div>
+      <div class="hint">Ritytan skalas automatiskt efter rummets mått. ▭ ruta i bakgrunden = 0,5 m.</div>
     </div>
 
     <div class="section">
@@ -167,12 +170,13 @@
         </select>
       </div>
       <div class="field-row">
-        <div class="field"><label>Diameter runt bord (cm)</label><input type="number" id="acRoundD" min="60" max="300" step="10"></div>
+        <div class="field"><label>Diameter runt bord (m)</label><input type="number" id="acRoundD" min="0.6" max="3" step="0.1"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Bredd rekt. bord (cm)</label><input type="number" id="acRectW" min="60" max="400" step="10"></div>
-        <div class="field"><label>Djup rekt. bord (cm)</label><input type="number" id="acRectH" min="40" max="200" step="10"></div>
+        <div class="field"><label>Bredd rekt. bord (m)</label><input type="number" id="acRectW" min="0.6" max="4" step="0.1"></div>
+        <div class="field"><label>Djup rekt. bord (m)</label><input type="number" id="acRectH" min="0.4" max="2" step="0.1"></div>
       </div>
+      <label class="check"><input type="checkbox" id="acNoCorners"> Ingen sittplats i hörnen på rektangulära bord</label>
       <label class="check"><input type="checkbox" id="includeHead" checked> Hedersbord/toppbord (bänkplacering, endast en sida — t.ex. för brudpar)</label>
       <div class="field" style="margin-top:8px;"><label>Platser vid hedersbord</label><input type="number" id="headSeats" min="2" max="40" step="1"></div>
       <div class="hint">Hedersbord delas automatiskt upp i flera bord i rad om det blir för brett (max ~8 platser per bord), med bänkplacering på framsidan så gäster kan komma fram och prata.</div>
@@ -195,15 +199,16 @@
         <input type="text" id="propName">
       </div>
       <div id="propRound">
-        <div class="field"><label>Diameter (cm)</label><input type="number" id="propDiameter" min="40" max="400" step="5"></div>
+        <div class="field"><label>Diameter (m)</label><input type="number" id="propDiameter" min="0.4" max="4" step="0.05"></div>
       </div>
       <div id="propRect" style="display:none;">
         <div class="field-row">
-          <div class="field"><label>Bredd (cm)</label><input type="number" id="propW" min="40" max="600" step="5"></div>
-          <div class="field"><label>Djup (cm)</label><input type="number" id="propH" min="40" max="500" step="5"></div>
+          <div class="field"><label>Bredd (m)</label><input type="number" id="propW" min="0.4" max="6" step="0.05"></div>
+          <div class="field"><label>Djup (m)</label><input type="number" id="propH" min="0.4" max="5" step="0.05"></div>
         </div>
         <div class="field"><label>Rotation (grader)</label><input type="number" id="propRot" min="0" max="359" step="15"></div>
         <label class="check"><input type="checkbox" id="propBench"> Bänkplacering (endast framsidan)</label>
+        <label class="check"><input type="checkbox" id="propNoCorners"> Ingen sittplats i hörnen</label>
       </div>
       <div class="field" style="margin-top:10px;"><label>Antal platser</label><input type="number" id="propSeats" min="1" max="40" step="1"></div>
       <div class="recommend" id="propRecommend"></div>
@@ -236,18 +241,32 @@
       <div id="alphaList" style="margin-top:8px;max-height:220px;overflow-y:auto;"></div>
       <div class="field-row" style="margin-top:10px;">
         <div class="field"><label>Linjefärg</label><input type="color" id="exportColor2" value="#1c2b3a" style="height:34px;padding:2px;"></div>
+        <div class="field"><label>Filformat</label>
+          <select id="exportFormat2" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:3px;font-family:'Space Grotesk',sans-serif;font-size:13px;background:#fff;">
+            <option value="svg">SVG (vektor)</option>
+            <option value="png">PNG (bild)</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </div>
       </div>
-      <div class="hint">Bakgrunden är alltid transparent.</div>
-      <button class="full" id="exportNameList" style="margin-top:8px;">⬇ Exportera gästlista (SVG)</button>
+      <div class="hint">Bakgrunden är alltid transparent (utom PDF, som alltid har vit sida).</div>
+      <button class="full" id="exportNameList" style="margin-top:8px;">⬇ Exportera gästlista</button>
     </div>
 
     <div class="section">
-      <h2>Exportera som vektorfil (SVG)</h2>
+      <h2>Exportera bordsplaceringen</h2>
       <div class="field-row">
         <div class="field"><label>Linjefärg</label><input type="color" id="exportColor" value="#1c2b3a" style="height:34px;padding:2px;"></div>
+        <div class="field"><label>Filformat</label>
+          <select id="exportFormat" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:3px;font-family:'Space Grotesk',sans-serif;font-size:13px;background:#fff;">
+            <option value="svg">SVG (vektor)</option>
+            <option value="png">PNG (bild)</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </div>
       </div>
-      <div class="hint">Bakgrunden är alltid transparent, så filen kan läggas ovanpå valfri färg eller material.</div>
-      <button class="full" id="exportSvg" style="margin-top:8px;">⬇ Exportera SVG</button>
+      <div class="hint">SVG och PNG får transparent bakgrund så filen funkar i Canva, Word, PowerPoint m.fl. — läggs ovanpå valfri färg eller material. PDF får vit sida.</div>
+      <button class="full" id="exportSvg" style="margin-top:8px;">⬇ Exportera</button>
     </div>
 
     <div class="section" style="border-bottom:none;">
@@ -269,7 +288,7 @@
         <button id="zoomReset" class="ghost">Återställ vy</button>
       </div>
       <div class="grp">
-        <label class="check" style="margin:0;color:#c9d6e2;"><input type="checkbox" id="snapToggle" checked> Snäppa 10 cm</label>
+        <label class="check" style="margin:0;color:#c9d6e2;"><input type="checkbox" id="snapToggle" checked> Snäppa 0,1 m</label>
       </div>
       <div class="grp" style="border-right:none;">
         <span class="mode-hint">Dra bord för att placera dem. Klicka för att välja.</span>
@@ -293,6 +312,7 @@
   const SEAT_SPACING = 65;
   const CHAIR_OFFSET = 28;
   const CHAIR_R = 14;
+  const CORNER_MARGIN = 35;
   const MAX_PER_HEAD_TABLE = 8;
 
   let uidCounter = 1;
@@ -312,10 +332,14 @@
 
   function snapVal(v){ return state.snap ? Math.round(v/10)*10 : Math.round(v); }
   function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function fmtM(cm){ return (Math.round((cm/100)*100)/100).toString(); }
+  function mToCm(v, fallback){ const n = parseFloat(v); return (isFinite(n) ? n : fallback) * 100; }
 
   function tableFootprint(t){
     if (t.type === 'round') return {w: t.diameter, h: t.diameter};
-    return {w: t.w, h: t.h};
+    const rad = ((t.rotation||0) * Math.PI) / 180;
+    const c = Math.abs(Math.cos(rad)), s = Math.abs(Math.sin(rad));
+    return { w: t.w*c + t.h*s, h: t.w*s + t.h*c };
   }
 
   function recommendedSeats(t){
@@ -325,7 +349,8 @@
     if (t.bench){
       return Math.max(1, Math.floor(t.w / 60));
     }
-    return Math.max(2, Math.round((2*(t.w+t.h)) / SEAT_SPACING));
+    const perim = usableRectPerimeter(t);
+    return Math.max(2, Math.round(perim / SEAT_SPACING));
   }
 
   function getSeatCount(t){
@@ -338,6 +363,13 @@
     while (t.seats.length < n) t.seats.push(null);
   }
 
+  function usableRectPerimeter(t){
+    if (!t.noCorners) return 2*(t.w+t.h);
+    const uw = Math.max(10, t.w - 2*CORNER_MARGIN);
+    const uh = Math.max(10, t.h - 2*CORNER_MARGIN);
+    return 2*(uw+uh);
+  }
+
   function rectPerimeterPoint(w,h,d){
     const per = 2*(w+h);
     let dd = ((d % per) + per) % per;
@@ -348,6 +380,20 @@
     if (dd <= w) return {x:w/2-dd, y:h/2, nx:0, ny:1};
     dd -= w;
     return {x:-w/2, y:h/2-dd, nx:-1, ny:0};
+  }
+
+  function rectPerimeterPointNoCorners(w,h,margin,d){
+    const uw = Math.max(10, w - 2*margin);
+    const uh = Math.max(10, h - 2*margin);
+    const per = 2*(uw+uh);
+    let dd = ((d % per) + per) % per;
+    if (dd <= uw) return {x:-w/2+margin+dd, y:-h/2, nx:0, ny:-1};
+    dd -= uw;
+    if (dd <= uh) return {x:w/2, y:-h/2+margin+dd, nx:1, ny:0};
+    dd -= uh;
+    if (dd <= uw) return {x:w/2-margin-dd, y:h/2, nx:0, ny:1};
+    dd -= uw;
+    return {x:-w/2, y:h/2-margin-dd, nx:-1, ny:0};
   }
 
   function getSeatLocalPositions(t){
@@ -365,10 +411,10 @@
         positions.push({x: -t.w/2 + spacing*(i+0.5), y: -t.h/2 - CHAIR_OFFSET});
       }
     } else {
-      const perim = 2*(t.w+t.h);
+      const perim = usableRectPerimeter(t);
       for (let i=0;i<n;i++){
         const d = (i+0.5) * (perim/n);
-        const p = rectPerimeterPoint(t.w, t.h, d);
+        const p = t.noCorners ? rectPerimeterPointNoCorners(t.w, t.h, CORNER_MARGIN, d) : rectPerimeterPoint(t.w, t.h, d);
         positions.push({x: p.x + p.nx*CHAIR_OFFSET, y: p.y + p.ny*CHAIR_OFFSET});
       }
     }
@@ -403,7 +449,7 @@
   function makeTable(type, opts){
     const t = Object.assign({
       id: uid(), type, name: '', x: 300, y: 300,
-      diameter: 120, w: 180, h: 75, bench:false, rotation: 0,
+      diameter: 120, w: 180, h: 75, bench:false, noCorners:false, rotation: 0,
       seatsOverride: null, seats: []
     }, opts||{});
     ensureSeatsLength(t);
@@ -455,11 +501,14 @@
 
     const guestCount = clamp(parseInt(document.getElementById('guestCount').value||1,10), 1, 2000);
     const pref = document.getElementById('tablePref').value;
-    const roundD = clamp(parseInt(document.getElementById('acRoundD').value||150,10), 60, 300);
-    const rectW = clamp(parseInt(document.getElementById('acRectW').value||180,10), 60, 400);
-    const rectH = clamp(parseInt(document.getElementById('acRectH').value||75,10), 40, 200);
+    const roundD = clamp(Math.round(mToCm(document.getElementById('acRoundD').value, 1.5)), 60, 300);
+    const rectW = clamp(Math.round(mToCm(document.getElementById('acRectW').value, 1.8)), 60, 400);
+    const rectH = clamp(Math.round(mToCm(document.getElementById('acRectH').value, 0.75)), 40, 200);
+    const noCorners = document.getElementById('acNoCorners').checked;
     const includeHead = document.getElementById('includeHead').checked;
     const headSeatsWanted = clamp(parseInt(document.getElementById('headSeats').value||8,10), 2, 40);
+    const roundCap = recommendedSeats({type:'round', diameter: roundD});
+    const rectCap = recommendedSeats({type:'rect', w: rectW, h: rectH, bench:false, noCorners});
 
     let remaining = guestCount;
     const newTables = [];
@@ -481,8 +530,6 @@
       remaining -= headTotal;
     }
 
-    const roundCap = recommendedSeats({type:'round', diameter: roundD});
-    const rectCap = recommendedSeats({type:'rect', w: rectW, h: rectH, bench:false});
     let toggle = 0;
     let guard = 0;
     while (remaining > 0 && guard < 500){
@@ -497,7 +544,7 @@
         }));
       } else {
         newTables.push(makeTable('rect', {
-          w: rectW, h: rectH, bench:false, seatsOverride: seatsForThis < cap ? seatsForThis : null
+          w: rectW, h: rectH, bench:false, noCorners, seatsOverride: seatsForThis < cap ? seatsForThis : null
         }));
       }
       remaining -= seatsForThis;
@@ -634,8 +681,8 @@
   }
 
   function renderSidebar(){
-    document.getElementById('roomWidth').value = state.room.width;
-    document.getElementById('roomLength').value = state.room.length;
+    document.getElementById('roomWidth').value = fmtM(state.room.width);
+    document.getElementById('roomLength').value = fmtM(state.room.length);
 
     const propsSection = document.getElementById('propsSection');
     const table = state.selectedTableId ? findTable(state.selectedTableId) : null;
@@ -647,12 +694,13 @@
       const isRound = table.type === 'round';
       document.getElementById('propRound').style.display = isRound ? '' : 'none';
       document.getElementById('propRect').style.display = isRound ? 'none' : '';
-      if (isRound) document.getElementById('propDiameter').value = table.diameter;
+      if (isRound) document.getElementById('propDiameter').value = fmtM(table.diameter);
       else {
-        document.getElementById('propW').value = table.w;
-        document.getElementById('propH').value = table.h;
+        document.getElementById('propW').value = fmtM(table.w);
+        document.getElementById('propH').value = fmtM(table.h);
         document.getElementById('propRot').value = table.rotation || 0;
         document.getElementById('propBench').checked = !!table.bench;
+        document.getElementById('propNoCorners').checked = !!table.noCorners;
       }
       document.getElementById('propSeats').value = getSeatCount(table);
       const rec = recommendedSeats(table);
@@ -808,10 +856,10 @@
   });
 
   document.getElementById('roomWidth').addEventListener('input', (e) => {
-    state.room.width = clamp(parseInt(e.target.value||200,10), 200, 5000); commit();
+    state.room.width = clamp(Math.round(mToCm(e.target.value, 2)), 200, 5000); commit();
   });
   document.getElementById('roomLength').addEventListener('input', (e) => {
-    state.room.length = clamp(parseInt(e.target.value||200,10), 200, 5000); commit();
+    state.room.length = clamp(Math.round(mToCm(e.target.value, 2)), 200, 5000); commit();
   });
 
   document.getElementById('snapToggle').addEventListener('change', (e) => { state.snap = e.target.checked; });
@@ -830,15 +878,15 @@
   });
   document.getElementById('propDiameter').addEventListener('input', (e) => {
     const t = findTable(state.selectedTableId); if(!t) return;
-    t.diameter = clamp(parseInt(e.target.value||40,10), 40, 400); ensureSeatsLength(t); commit();
+    t.diameter = clamp(Math.round(mToCm(e.target.value, 0.4)), 40, 400); ensureSeatsLength(t); commit();
   });
   document.getElementById('propW').addEventListener('input', (e) => {
     const t = findTable(state.selectedTableId); if(!t) return;
-    t.w = clamp(parseInt(e.target.value||40,10), 40, 600); ensureSeatsLength(t); commit();
+    t.w = clamp(Math.round(mToCm(e.target.value, 0.4)), 40, 600); ensureSeatsLength(t); commit();
   });
   document.getElementById('propH').addEventListener('input', (e) => {
     const t = findTable(state.selectedTableId); if(!t) return;
-    t.h = clamp(parseInt(e.target.value||40,10), 40, 500); ensureSeatsLength(t); commit();
+    t.h = clamp(Math.round(mToCm(e.target.value, 0.4)), 40, 500); ensureSeatsLength(t); commit();
   });
   document.getElementById('propRot').addEventListener('input', (e) => {
     const t = findTable(state.selectedTableId); if(!t) return;
@@ -847,6 +895,10 @@
   document.getElementById('propBench').addEventListener('change', (e) => {
     const t = findTable(state.selectedTableId); if(!t) return;
     t.bench = e.target.checked; ensureSeatsLength(t); commit();
+  });
+  document.getElementById('propNoCorners').addEventListener('change', (e) => {
+    const t = findTable(state.selectedTableId); if(!t) return;
+    t.noCorners = e.target.checked; ensureSeatsLength(t); commit();
   });
   document.getElementById('propSeats').addEventListener('input', (e) => {
     const t = findTable(state.selectedTableId); if(!t) return;
@@ -906,6 +958,56 @@
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  function rasterizeSVG(svgString, pxWidth, pxHeight){
+    return new Promise((resolve, reject) => {
+      const blob = new Blob([svgString], {type:'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = pxWidth; canvas.height = pxHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, pxWidth, pxHeight);
+        URL.revokeObjectURL(url);
+        resolve(canvas);
+      };
+      img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+      img.src = url;
+    });
+  }
+
+  async function exportSvgAs(format, svgString, filenameBase, unitWidth, unitHeight){
+    if (format === 'svg'){
+      downloadBlob(svgString, filenameBase + '.svg', 'image/svg+xml');
+      return;
+    }
+    const scale = clamp(2400 / Math.max(unitWidth, unitHeight), 1, 6);
+    const pxW = Math.round(unitWidth * scale), pxH = Math.round(unitHeight * scale);
+    let canvas;
+    try{
+      canvas = await rasterizeSVG(svgString, pxW, pxH);
+    }catch(e){
+      alert('Kunde inte skapa bildfilen. Prova SVG istället.');
+      return;
+    }
+    if (format === 'png'){
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filenameBase + '.png';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } else if (format === 'pdf'){
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: pxW >= pxH ? 'landscape' : 'portrait', unit:'px', format:[pxW, pxH] });
+      pdf.setFillColor(255,255,255);
+      pdf.rect(0,0,pxW,pxH,'F');
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pxW, pxH);
+      pdf.save(filenameBase + '.pdf');
+    }
   }
 
   function extractNames(rows){
@@ -1009,7 +1111,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dims.w} ${dims.h}" width="${dims.w}" height="${dims.h}">
 ${parts.join('\n')}
 </svg>`;
-    downloadBlob(svgStr, 'bordsplacering.svg', 'image/svg+xml');
+    const format = document.getElementById('exportFormat').value;
+    exportSvgAs(format, svgStr, 'bordsplacering', dims.w, dims.h);
   });
 
   document.getElementById('exportNameList').addEventListener('click', () => {
@@ -1033,13 +1136,14 @@ ${parts.join('\n')}
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
 ${body}
 </svg>`;
-    downloadBlob(svgStr, 'gastlista.svg', 'image/svg+xml');
+    const format = document.getElementById('exportFormat2').value;
+    exportSvgAs(format, svgStr, 'gastlista', width, height);
   });
 
   document.getElementById('guestCount').value = 80;
-  document.getElementById('acRoundD').value = 150;
-  document.getElementById('acRectW').value = 180;
-  document.getElementById('acRectH').value = 75;
+  document.getElementById('acRoundD').value = 1.5;
+  document.getElementById('acRectW').value = 1.8;
+  document.getElementById('acRectH').value = 0.75;
   document.getElementById('headSeats').value = 10;
 
   loadState();
